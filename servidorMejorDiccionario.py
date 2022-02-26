@@ -15,7 +15,7 @@ queue = queue.Queue()
 keyboard = Controller()
 
 # TODO añadir mantener
-dictTeclado = {
+botonATecla = {
     'a': Key.enter,
     'b': Key.shift,
     'left': 'a',
@@ -31,21 +31,19 @@ sensibilidadJoystick = 0.8
 dictMando = {'BTN_SOUTH': 'a', 'BTN_NORTH': 'y', 'BTN_WEST': 'x',
              'BTN_EAST': 'b', 'BTN_TL': 'l1', 'BTN_TR': 'r1'}
 
-
-
 dictMandoJoystick = {
-'ABS_HAT0X-': 'left', 'ABS_HAT0X+': 'right', 'ABS_HAT0Y+': 'down','ABS_HAT0Y-': 'up',
-'ABS_X-' : 'left', 'ABS_X+': 'right', 'ABS_Y+': 'up','ABS_Y-': 'down'
+    'ABS_HAT0X-': 'left', 'ABS_HAT0X+': 'right', 'ABS_HAT0Y+': 'down', 'ABS_HAT0Y-': 'up',
+    'ABS_X-': 'left', 'ABS_X+': 'right', 'ABS_Y+': 'up', 'ABS_Y-': 'down'
 }
 
-joysticksMando = {'ABS_HAT0X','ABS_HAT0Y','ABS_X','ABS_Y'}
-
+joysticksMando = {'ABS_HAT0X', 'ABS_HAT0Y', 'ABS_X', 'ABS_Y'}
 
 pulsada = False
 pulsadoMando = -1
 
+
 def mando():
-    global dictMando, pulsadoMando, dictMandoJoystick, sensibilidadJoystick,joysticksMando
+    global dictMando, pulsadoMando, dictMandoJoystick, sensibilidadJoystick, joysticksMando
     joystickPulsado = []
     while True:
         eventos = get_gamepad()
@@ -73,9 +71,11 @@ def mando():
                     if math.fabs(evento.state) < sensibilidadJoystick:
                         joystickPulsado.remove(evento.code)
 
+
 def enviarCaracter(char):
     print(char)
-    queue.put(char)
+    queue.put(botonATecla[char])
+
 
 class Mando(threading.Thread):
     def __init__(self, name):
@@ -91,11 +91,10 @@ def leer():
         data, address = s.recvfrom(4096)
         tecla = data.decode('utf-8')
         global queue
-        queue.put(tecla)
-        print(tecla)
-#TODO añadir que ponga lo que hay que pulsar directamente y que escriba lo contrario
-#TODO añadir un hilo que lea del mando y asi ahorrar comunicacion local.
-
+        try:
+            queue.put(botonATecla[tecla])
+        except:
+            print(tecla)
 
 
 def escribir():
@@ -103,7 +102,6 @@ def escribir():
         try:
             tecla = queue.get()
             try:
-                tecla = dictTeclado[tecla]
                 global keyboard
                 keyboard.press(tecla)
                 sleep(0.10)
@@ -121,7 +119,6 @@ class lectura(threading.Thread):
 
     def run(self):
         leer()
-
 
 
 class escritura(threading.Thread):
