@@ -93,7 +93,8 @@ def leer():
         global queue
         queue.put(tecla)
         print(tecla)
-
+#TODO añadir que ponga lo que hay que pulsar directamente y que escriba lo contrario
+#TODO añadir un hilo que lea del mando y asi ahorrar comunicacion local.
 
 
 
