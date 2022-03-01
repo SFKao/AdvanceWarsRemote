@@ -114,7 +114,7 @@ def on_press(key):
                 print("Tiempo repetir = ", tiempoRepetirBoton)
             else:
                 if key.char == teclaReducirTiempoRepeticion and silenciado is False:
-                    if tiempoRepetirBoton > 0.31:
+                    if tiempoRepetirBoton > 0.22:
                         tiempoRepetirBoton = tiempoRepetirBoton - 0.1
                     print("Tiempo repetir = ", tiempoRepetirBoton)
     except:
