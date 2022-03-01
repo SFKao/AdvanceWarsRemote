@@ -14,7 +14,6 @@ s.bind(server_address)
 queue = queue.Queue()
 keyboard = Controller()
 
-# TODO añadir mantener
 botonATecla = {
     'a': Key.enter,
     'b': Key.shift,
@@ -25,9 +24,12 @@ botonATecla = {
     'l1': 'q',
     'r1': 'e'
 }
+#Inicio mando
 
 sensibilidadJoystick = 0.8
+tiempoRepetirBoton = 0.3
 
+dictTeclado = {'a': 'left', 's': 'down', 'd': 'right', 'w': 'up', 97: 'a', 98: 'b', 100: 'l1', 101: 'r1'}
 dictMando = {'BTN_SOUTH': 'a', 'BTN_NORTH': 'y', 'BTN_WEST': 'x',
              'BTN_EAST': 'b', 'BTN_TL': 'l1', 'BTN_TR': 'r1'}
 
@@ -40,10 +42,11 @@ joysticksMando = {'ABS_HAT0X', 'ABS_HAT0Y', 'ABS_X', 'ABS_Y'}
 
 pulsada = False
 pulsadoMando = -1
+repetirBoton = ""
 
 
 def mando():
-    global dictMando, pulsadoMando, dictMandoJoystick, sensibilidadJoystick, joysticksMando
+    global dictMando, pulsadoMando, dictMandoJoystick, sensibilidadJoystick, joysticksMando, repetirBoton
     joystickPulsado = []
     while True:
         eventos = get_gamepad()
@@ -61,20 +64,28 @@ def mando():
                         str = evento.code + "+"
                         pulsar = dictMandoJoystick[str]
                         enviarCaracter(pulsar)
+                        repetirBoton = pulsar
                         joystickPulsado.append(evento.code)
                     if estado < -sensibilidadJoystick:
                         str = evento.code + "-"
                         pulsar = dictMandoJoystick[str]
                         enviarCaracter(pulsar)
+                        repetirBoton = pulsar
                         joystickPulsado.append(evento.code)
                 else:
                     if math.fabs(evento.state) < sensibilidadJoystick:
+                        repetirBoton = ""
                         joystickPulsado.remove(evento.code)
 
 
-def enviarCaracter(char):
-    print(char)
-    queue.put(botonATecla[char])
+def repetir():
+    while True:
+        global repetirBoton, tiempoRepetirBoton
+        if repetirBoton != "":
+            repetirLocal = repetirBoton
+            sleep(tiempoRepetirBoton)
+            if repetirBoton == repetirLocal:
+                enviarCaracter(repetirBoton)
 
 
 class Mando(threading.Thread):
@@ -85,6 +96,22 @@ class Mando(threading.Thread):
     def run(self):
         mando()
 
+
+class Repetir(threading.Thread):
+    def __init__(self, name):
+        threading.Thread.__init__(self)
+        self.name = 'repetir'
+
+    def run(self):
+        repetir()
+
+
+def enviarCaracter(char):
+    print(char)
+    try:
+        queue.put(botonATecla[char])
+    except:
+        pass
 
 def leer():
     while True:
@@ -133,3 +160,4 @@ class escritura(threading.Thread):
 hilo1 = lectura('lectura').start()
 hilo2 = escritura('escritura').start()
 hiloMando = Mando('mando').start()
+hiloRepetir = Repetir('repetir').start()
